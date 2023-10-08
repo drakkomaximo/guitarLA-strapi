@@ -1,0 +1,76 @@
+---
+import Guitarra from "../components/Guitarra.astro";
+import Post from "../components/Post.astro";
+import Curso from "../components/Curso.astro";
+import Layout from "../layouts/Layout.astro";
+import ComponenteReact from "../components/ComponenteReact";
+
+const urlGuitarras = `${
+	import.meta.env.PUBLIC_API_URL
+}/guitarras?populate=imagen`;
+const urlBlogs = `${import.meta.env.PUBLIC_API_URL}/posts?populate=imagen`;
+const urlCurso = `${import.meta.env.PUBLIC_API_URL}/curso?populate=imagen`;
+
+const [resGuitarras, resBlogs, resCurso] = await Promise.all([
+	fetch(urlGuitarras),
+	fetch(urlBlogs),
+	fetch(urlCurso),
+]);
+
+const [{ data: guitarras }, { data: blogs }, { data: curso }] =
+	await Promise.all([resGuitarras.json(), resBlogs.json(), resCurso.json()]);
+---
+
+<Layout title="Inicio">
+	<main class="contenedor">
+		<h1 class="heading">Nuestra Colección</h1>
+
+		<div class="grid">
+			{
+				guitarras?.map((guitarra) => (
+					<Guitarra
+						nombre={guitarra.attributes.nombre}
+						descripcion={guitarra.attributes.descripcion}
+						imagen={
+							guitarra.attributes.imagen.data.attributes.formats
+								.medium.url
+						}
+						precio={guitarra.attributes.precio}
+						url={guitarra.attributes.url}
+					/>
+				))
+			}
+		</div>
+	</main>
+
+	<Curso
+		titulo={curso.attributes.titulo}
+		contenido={curso.attributes.contenido}
+		imagen={curso.attributes.imagen.data.attributes.url}
+	/>
+
+	<ComponenteReact client:only />
+
+	<section class="contenedor">
+		<h2 class="heading">Blog</h2>
+
+		<div class="grid">
+			{
+				blogs?.map((post) => (
+					<Post
+						titulo={post.attributes.nombre}
+						publishedAt={post.attributes.publishedAt}
+						contenido={post.attributes.descripcion}
+						imagen={
+							post.attributes.imagen.data.attributes.formats
+								.medium.url
+						}
+						url={post.attributes.url}
+					/>
+				))
+			}
+		</div>
+	</section>
+</Layout>
+
+<style></style>
